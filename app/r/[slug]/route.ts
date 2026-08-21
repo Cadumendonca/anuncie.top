@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { databaseEnabled, prisma } from "@/lib/prisma";
+import { mockSnapshot } from "@/lib/mock-data";
+import { destinationWithUtm } from "@/lib/url";
+export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) { const { slug } = await params; if (databaseEnabled) { const listing = await prisma.listing.findUnique({ where: { slug } }); if (!listing || listing.status !== "ACTIVE") return NextResponse.redirect(new URL("/", request.url)); const date = new Date(); date.setUTCHours(0,0,0,0); await prisma.clickDaily.upsert({ where: { listingId_date: { listingId: listing.id, date } }, create: { listingId: listing.id, date, count: 1 }, update: { count: { increment: 1 } } }); return NextResponse.redirect(destinationWithUtm(listing.canonicalUrl)); } const mock = mockSnapshot.listings.find((item) => item.slug === slug); return NextResponse.redirect(mock ? `https://${mock.host}?utm_source=seusiteemalta` : new URL("/", request.url)); }

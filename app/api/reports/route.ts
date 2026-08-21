@@ -1,0 +1,3 @@
+import { NextResponse } from "next/server";
+import { databaseEnabled, prisma } from "@/lib/prisma";
+export async function POST(request: Request) { const form = await request.formData(); const target = String(form.get("target") ?? ""); const listing = databaseEnabled ? await prisma.listing.findFirst({ where: { OR: [{ host: target }, { canonicalUrl: { contains: target } }] } }) : null; if (listing) await prisma.report.create({ data: { listingId: listing.id, email: String(form.get("email") ?? ""), reason: String(form.get("reason") ?? "outro"), details: String(form.get("details") ?? "") } }); return NextResponse.redirect(new URL("/denunciar?enviado=1", request.url), 303); }

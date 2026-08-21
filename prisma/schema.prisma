@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "foreignKeys"
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum ListingStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  REMOVED
+  REFUNDED
+}
+
+enum BidType {
+  NEW_LISTING
+  INCREASE
+  TAKEOVER
+}
+
+enum PaymentStatus {
+  CREATED
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  REFUNDED
+  CHARGED_BACK
+}
+
+enum TakeoverStatus {
+  RESERVED
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id                   String       @id @default(cuid())
+  name                 String?
+  email                String       @unique
+  emailVerified        DateTime?
+  image                String?
+  role                 UserRole     @default(USER)
+  status               UserStatus   @default(ACTIVE)
+  rankingEmailsEnabled Boolean      @default(true)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  accounts             Account[]
+  sessions             Session[]
+  listings             Listing[]
+  bidOrders            BidOrder[]
+  reports              Report[]
+  auditLogs             AuditLog[]  @relation("AuditActor")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id])
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+model Listing {
+  id             String        @id @default(cuid())
+  ownerId        String?
+  originalUrl    String        @db.Text
+  canonicalUrl   String        @db.Text
+  canonicalKey   String        @unique
+  slug           String        @unique
+  kind           String        @default("WEBSITE")
+  host           String
+  title          String
+  description    String?       @db.Text
+  faviconUrl     String?       @db.Text
+  status         ListingStatus @default(PENDING)
+  netBidCents    Int           @default(0)
+  rankedAt       DateTime      @default(now())
+  publishedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  owner          User?         @relation(fields: [ownerId], references: [id])
+  bidOrders      BidOrder[]
+  takeovers      Takeover[]
+  clickDays      ClickDaily[]
+  reports        Report[]
+  @@index([status, netBidCents, rankedAt])
+  @@index([ownerId])
+}
+
+model BidOrder {
+  id                  String        @id @default(cuid())
+  userId              String?
+  listingId           String
+  type                 BidType
+  targetBidCents      Int
+  chargeCents         Int
+  topBidSnapshotCents Int
+  status               PaymentStatus @default(CREATED)
+  expiresAt            DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  user                 User?         @relation(fields: [userId], references: [id])
+  listing              Listing       @relation(fields: [listingId], references: [id])
+  payments             Payment[]
+  takeover             Takeover?
+  @@index([listingId, status])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  bidOrderId        String        @unique
+  provider          String        @default("MERCADO_PAGO")
+  providerPaymentId String?       @unique
+  preferenceId      String?       @unique
+  amountCents       Int
+  currency          String        @default("BRL")
+  status            PaymentStatus @default(CREATED)
+  liveMode          Boolean       @default(false)
+  approvedAt        DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  bidOrder          BidOrder      @relation(fields: [bidOrderId], references: [id])
+  refunds           Refund[]
+  @@index([bidOrderId])
+}
+
+model Refund {
+  id               String        @id @default(cuid())
+  paymentId        String
+  providerRefundId String?       @unique
+  amountCents      Int
+  reason           String        @db.Text
+  status           PaymentStatus @default(PENDING)
+  actorId          String?
+  createdAt        DateTime      @default(now())
+  payment          Payment       @relation(fields: [paymentId], references: [id])
+  @@index([paymentId])
+}
+
+model Takeover {
+  id        String         @id @default(cuid())
+  listingId String
+  bidOrderId String        @unique
+  status    TakeoverStatus @default(RESERVED)
+  reservedUntil DateTime
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime       @default(now())
+  listing   Listing        @relation(fields: [listingId], references: [id])
+  bidOrder  BidOrder       @relation(fields: [bidOrderId], references: [id])
+  @@index([status, reservedUntil, endsAt])
+}
+
+model WebhookEvent {
+  id          String   @id @default(cuid())
+  provider    String
+  externalId  String
+  action      String
+  signatureOk Boolean
+  processedAt DateTime?
+  error       String?  @db.Text
+  payload     Json
+  createdAt   DateTime @default(now())
+  @@unique([provider, externalId, action])
+}
+
+model ClickDaily {
+  id        String   @id @default(cuid())
+  listingId String
+  date      DateTime @db.Date
+  count     Int      @default(0)
+  listing   Listing  @relation(fields: [listingId], references: [id])
+  @@unique([listingId, date])
+}
+
+model BlockRule {
+  id        String   @id @default(cuid())
+  type      String
+  value     String
+  reason    String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  @@unique([type, value])
+}
+
+model Report {
+  id        String       @id @default(cuid())
+  listingId String
+  reporterId String?
+  email     String?
+  reason    String
+  details   String?      @db.Text
+  status    ReportStatus @default(OPEN)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  listing   Listing      @relation(fields: [listingId], references: [id])
+  reporter  User?        @relation(fields: [reporterId], references: [id])
+  @@index([status, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id])
+  @@index([entityType, entityId, createdAt])
+}

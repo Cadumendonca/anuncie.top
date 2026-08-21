@@ -1,0 +1,11 @@
+import Link from "next/link";
+import { auth } from "@/auth";
+import { databaseEnabled, prisma } from "@/lib/prisma";
+import { formatBRL } from "@/lib/money";
+
+export default async function AdminPage() {
+  const session = await auth();
+  if (session?.user.role !== "ADMIN" && session?.user.role !== "MODERATOR") return <div className="auth-shell"><h1>Acesso restrito</h1><p>Entre com um e-mail autorizado para operar a plataforma.</p><Link className="primary-button" href="/entrar">Entrar</Link></div>;
+  const [listings, payments, reports, revenue] = databaseEnabled ? await Promise.all([prisma.listing.findMany({ take: 20, orderBy: { updatedAt: "desc" } }), prisma.payment.count(), prisma.report.count({ where: { status: "OPEN" } }), prisma.payment.aggregate({ where: { status: "APPROVED" }, _sum: { amountCents: true } })]) : [[], 0, 0, { _sum: { amountCents: 0 } }];
+  return <div className="dashboard-shell"><div className="dashboard-header"><div><h1>Operação</h1><p>Pagamentos, conteúdo e integridade do ranking.</p></div><span className="status">{session.user.role}</span></div><nav className="admin-tabs"><Link href="/admin">Visão geral</Link><Link href="/admin?tab=anuncios">Anúncios</Link><Link href="/admin?tab=pagamentos">Pagamentos</Link><Link href="/admin?tab=takeovers">Takeovers</Link><Link href="/admin?tab=denuncias">Denúncias</Link><Link href="/admin?tab=auditoria">Auditoria</Link></nav><div className="metric-grid"><div className="metric"><span>Receita aprovada</span><strong>{formatBRL(revenue._sum.amountCents ?? 0)}</strong></div><div className="metric"><span>Pagamentos</span><strong>{payments}</strong></div><div className="metric"><span>Anúncios</span><strong>{listings.length}</strong></div><div className="metric"><span>Denúncias abertas</span><strong>{reports}</strong></div></div><section className="data-panel"><div className="data-panel-header"><h2>Anúncios recentes</h2><button className="secondary-button">Exportar</button></div><table className="data-table"><thead><tr><th>Domínio</th><th>Status</th><th>Valor</th><th>Atualização</th></tr></thead><tbody>{listings.map((listing) => <tr key={listing.id}><td>{listing.host}</td><td><span className="status">{listing.status}</span></td><td>{formatBRL(listing.netBidCents)}</td><td>{listing.updatedAt.toLocaleString("pt-BR")}</td></tr>)}</tbody></table></section></div>;
+}
