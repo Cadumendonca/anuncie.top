@@ -8,6 +8,7 @@ export function BidHero({ price }: { price: number }) {
   const [target, setTarget] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -21,7 +22,8 @@ export function BidHero({ price }: { price: number }) {
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error ?? "Não foi possível abrir o Pix.");
-      window.location.assign(body.checkoutUrl);
+      setRedirecting(true);
+      window.setTimeout(() => window.location.assign(body.checkoutUrl), 1100);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Tente novamente.");
       setLoading(false);
@@ -37,5 +39,6 @@ export function BidHero({ price }: { price: number }) {
     </form>
     {error && <p className="form-error" role="alert">{error}</p>}
     <div className="secure-note"><ShieldCheck weight="fill" aria-hidden="true" /> Pagamento seguro via Pix no Mercado Pago.</div>
+    {redirecting && <div className="payment-redirect" role="status" aria-live="assertive"><span className="redirect-spinner" aria-hidden="true" /><strong>Você está sendo redirecionado</strong><p>O pagamento será concluído diretamente no ambiente seguro do Mercado Pago.</p></div>}
   </section>;
 }
