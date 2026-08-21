@@ -7,6 +7,7 @@ import { normalizeTarget } from "@/lib/url";
 import { databaseEnabled, prisma } from "@/lib/prisma";
 import { getRankingSnapshot } from "@/lib/ranking";
 import { fetchSiteMetadata, type SiteMetadata } from "@/lib/metadata";
+import { getAppOrigin } from "@/lib/app-url";
 
 const schema = z.object({ target: z.string().min(2).max(2048) });
 const blockedWords = ["porn", "xxx", "cassino ilegal", "golpe", "pirâmide"];
@@ -21,7 +22,9 @@ export async function POST(request: Request) {
     const topBid = snapshot.listings[0]?.netBidCents ?? MIN_BID_CENTS - 100;
     const amountCents = topBid + 100;
     assertWholeReal(amountCents);
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
+    // As URLs ficam gravadas na preferência do Mercado Pago. Em produção elas
+    // devem ser sempre HTTPS e nunca depender do host recebido na requisição.
+    const appUrl = getAppOrigin(request.url);
     if (!databaseEnabled || !process.env.MERCADO_PAGO_ACCESS_TOKEN) {
       return NextResponse.json({ checkoutUrl: `${appUrl}/pagamento/pendente?demo=1&valor=${amountCents}` });
     }
@@ -41,6 +44,7 @@ export async function POST(request: Request) {
     const client = new MercadoPagoConfig({ accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN });
     const preference = await new Preference(client).create({ body: { items: [{ id: order.id, title: isIncrease ? `Impulso no Anuncio.top` : `Posição no Anuncio.top`, quantity: 1, currency_id: "BRL", unit_price: chargeCents / 100 }], external_reference: order.id, back_urls: { success: `${appUrl}/pagamento/sucesso`, pending: `${appUrl}/pagamento/pendente`, failure: `${appUrl}/pagamento/falha` }, auto_return: "approved", notification_url: `${appUrl}/api/webhooks/mercado-pago`, statement_descriptor: "ANUNCIOTOP", payment_methods: { excluded_payment_types: [{ id: "credit_card" }, { id: "debit_card" }, { id: "ticket" }, { id: "atm" }], installments: 1 } } });
     await prisma.payment.create({ data: { bidOrderId: order.id, preferenceId: preference.id, amountCents: chargeCents, status: "CREATED", liveMode: process.env.MERCADO_PAGO_LIVE_MODE === "true" } });
+    if (!preference.init_point) throw new Error("O Mercado Pago não retornou a página de pagamento.");
     return NextResponse.json({ checkoutUrl: preference.init_point });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Não foi possível criar o pagamento." }, { status: 400 }); }
 }

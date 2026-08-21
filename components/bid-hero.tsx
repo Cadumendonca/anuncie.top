@@ -14,6 +14,9 @@ export function BidHero({ price }: { price: number }) {
     event.preventDefault();
     setError("");
     setLoading(true);
+    // Abrir uma página do próprio site durante o clique mantém o checkout em
+    // uma aba do navegador e evita que a resposta assíncrona pareça um deep link.
+    const paymentWindow = window.open("/pagamento/abrindo", "anuncio-top-checkout");
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
@@ -23,8 +26,15 @@ export function BidHero({ price }: { price: number }) {
       const body = await response.json();
       if (!response.ok) throw new Error(body.error ?? "Não foi possível abrir o Pix.");
       setRedirecting(true);
-      window.setTimeout(() => window.location.assign(body.checkoutUrl), 1100);
+      window.setTimeout(() => {
+        if (paymentWindow && !paymentWindow.closed) {
+          paymentWindow.location.replace(body.checkoutUrl);
+          return;
+        }
+        window.location.assign(body.checkoutUrl);
+      }, 700);
     } catch (reason) {
+      paymentWindow?.close();
       setError(reason instanceof Error ? reason.message : "Tente novamente.");
       setLoading(false);
     }
@@ -39,6 +49,6 @@ export function BidHero({ price }: { price: number }) {
     </form>
     {error && <p className="form-error" role="alert">{error}</p>}
     <div className="secure-note"><ShieldCheck weight="fill" aria-hidden="true" /> Pagamento seguro via Pix no Mercado Pago.</div>
-    {redirecting && <div className="payment-redirect" role="status" aria-live="assertive"><span className="redirect-spinner" aria-hidden="true" /><strong>Você está sendo redirecionado</strong><p>O pagamento será concluído diretamente no ambiente seguro do Mercado Pago.</p></div>}
+    {redirecting && <div className="payment-redirect" role="status" aria-live="assertive"><span className="redirect-spinner" aria-hidden="true" /><strong>Pagamento aberto no navegador</strong><p>Continue na nova aba segura do Mercado Pago. Depois do pagamento, você voltará para anuncio.top.</p></div>}
   </section>;
 }
