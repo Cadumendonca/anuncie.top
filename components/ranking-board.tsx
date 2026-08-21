@@ -38,11 +38,11 @@ export function RankingBoard({ initialListings, takeover }: { initialListings: P
 
   return (
     <section className="ranking-section" aria-labelledby="ranking-title">
-      <div className="ranking-heading"><div><p>Lista completa</p><h2 id="ranking-title">Outras posições</h2></div><span>{listings.reduce((total, listing) => total + listing.clicks, 0).toLocaleString("pt-BR")} visitas geradas · {listings.length} sites</span></div>
+      <div className="ranking-heading"><div><p>Lista completa</p><h2 id="ranking-title">Ranking</h2></div><span>{listings.reduce((total, listing) => total + listing.clicks, 0).toLocaleString("pt-BR")} visitas geradas · {listings.length} sites</span></div>
       {takeover && <div className="takeover-banner"><Crown weight="fill" /><div><strong>{takeover.listing.host} domina a primeira página</strong><span>Takeover ativo até {new Date(takeover.endsAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span></div></div>}
       <div className="ranking-list">
-        {listings.length <= 2 && <div className="ranking-empty"><strong>Ainda não há outras posições.</strong><span>Os próximos sites aparecerão aqui.</span></div>}
-        {listings.slice(2).map((listing) => <article className="ranking-row" key={listing.id}>
+        {listings.length === 0 && <div className="ranking-empty"><strong>Ainda não há sites no ranking.</strong><span>O primeiro anúncio aparecerá aqui.</span></div>}
+        {listings.map((listing) => <article className={`ranking-row ${listing.rank === 1 ? "is-first" : ""}`} key={listing.id}>
           <div className="rank-number">#{listing.rank}</div>
           <div className="site-avatar" aria-hidden="true">{listing.faviconUrl ? <img src={listing.faviconUrl} alt="" /> : listing.host.charAt(0).toUpperCase()}</div>
           <div className="listing-copy"><a href={`/r/${listing.slug}`} target="_blank" rel="noopener noreferrer"><strong>{listing.title}</strong><ArrowRight /></a><span className="listing-host">{listing.host}</span><p>{listing.description}</p><div className="listing-meta"><span>Valor adicionado {relativeTime(listing.publishedAt)}</span><span><CursorClick /> {listing.clicks.toLocaleString("pt-BR")} cliques</span></div></div>
