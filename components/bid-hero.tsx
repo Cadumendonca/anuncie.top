@@ -29,7 +29,7 @@ export function BidHero({ price }: { price: number }) {
   }
 
   return <section className="simple-entry" id="anunciar">
-    <div><span className="entry-eyebrow">Primeiro lugar em {formatBRL(price)}</span><h2>Anuncie ou suba sua posição</h2><p>Cole um link novo ou repita um site do ranking para impulsioná-lo.</p></div>
+    <div><span className="entry-eyebrow">Topo atual: {formatBRL(price)}</span><h2>Compre mais visibilidade</h2><p>Cole um link novo ou impulsione quem já está no ranking.</p></div>
     <form className="simple-form" onSubmit={submit} noValidate>
       <label className="sr-only" htmlFor="site-link">Link do seu site</label>
       <span className="input-shell"><GlobeSimple aria-hidden="true" /><input id="site-link" required value={target} onChange={(event) => setTarget(event.target.value)} placeholder="https://seusite.com.br" autoComplete="url" inputMode="url" /></span>
