@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   description: "O ranking brasileiro em que a sua oferta decide a posição.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://anuncio.top"),
   alternates: { canonical: "/" },
-  openGraph: { title: "Anuncio.top", description: "Dispute atenção. Ganhe cliques. Fique no topo.", url: "https://anuncio.top", siteName: "Anuncio.top", type: "website", locale: "pt_BR", images: [{ url: "/social-card.png", width: 1728, height: 909, alt: "Anuncio.top, seu site no topo" }] },
-  twitter: { card: "summary_large_image", title: "Anuncio.top", description: "Seu site no topo. Quem paga mais, sobe.", images: ["/social-card.png"] }
+  openGraph: { title: "Anuncio.top", description: "Dispute atenção. Ganhe cliques. Fique no topo.", url: "https://anuncio.top", siteName: "Anuncio.top", type: "website", locale: "pt_BR", images: [{ url: "/social-card-v2.png", width: 1728, height: 909, type: "image/png", alt: "Anuncio.top, seu site no topo" }] },
+  twitter: { card: "summary_large_image", title: "Anuncio.top", description: "Seu site no topo. Quem paga mais, sobe.", images: [{ url: "/social-card-v2.png", alt: "Anuncio.top, seu site no topo" }] }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
