@@ -41,6 +41,8 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .simple-brand { width: min(920px, calc(100% - 32px)); margin: 22px auto 0; display: flex; justify-content: center; }
 .simple-hero { width: min(760px, calc(100% - 32px)); margin: 30px auto 18px; text-align: center; }
 .simple-hero .hero-label { margin: 0 0 7px; color: var(--coral); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.simple-hero .visitor-count { width: fit-content; margin: 0 auto 12px; padding: 4px 10px; color: var(--muted); background: #f1ece4; border-radius: 999px; font-size: 11px; }
+.simple-hero .visitor-count strong { color: var(--ink); }
 .simple-hero h1 { margin: 0; font-size: clamp(34px, 5vw, 52px); line-height: 1; letter-spacing: -.06em; }
 .simple-hero h1 span { color: var(--coral); }
 .simple-hero .hero-intro { max-width: 670px; margin: 14px auto 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
