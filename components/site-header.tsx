@@ -5,7 +5,7 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-header-inner">
-        <Link href="/" aria-label="Anuncie.top, página inicial"><Logo /></Link>
+        <Link href="/" aria-label="Anuncio.top, página inicial"><Logo /></Link>
         <nav aria-label="Navegação principal">
           <Link href="/regras">Regras</Link>
           <Link href="/painel">Meu anúncio</Link>

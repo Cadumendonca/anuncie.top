@@ -16,7 +16,7 @@ function createSessionId() {
 export function Presence({ initialOnline, initialLastHour }: { initialOnline: number; initialLastHour: number }) {
   const [stats, setStats] = useState({ online: initialOnline, lastHour: initialLastHour });
   useEffect(() => {
-    const key = "anuncie-top-session";
+    const key = "anuncio-top-session";
     const sessionId = sessionStorage.getItem(key) ?? createSessionId();
     sessionStorage.setItem(key, sessionId);
     let active = true;

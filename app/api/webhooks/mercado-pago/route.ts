@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     await prisma.$transaction(async (tx) => {
       const payment = await tx.payment.update({ where: { bidOrderId: order.id }, data: { providerPaymentId: String(providerPayment.id), status: mapped, approvedAt: mapped === "APPROVED" ? new Date() : null } });
       if (mapped === "APPROVED" && order.status !== "APPROVED") {
-        const payerEmail = providerPayment.payer?.email?.trim().toLowerCase() || `pagamento-${providerPayment.id}@anuncie.top`;
+        const payerEmail = providerPayment.payer?.email?.trim().toLowerCase() || `pagamento-${providerPayment.id}@anuncio.top`;
         const user = await tx.user.upsert({ where: { email: payerEmail }, create: { email: payerEmail }, update: {} });
         await tx.bidOrder.update({ where: { id: order.id }, data: { status: "APPROVED", userId: user.id } });
         await tx.listing.update({ where: { id: order.listingId }, data: { ownerId: order.listing.ownerId ?? user.id, status: "ACTIVE", netBidCents: { increment: order.chargeCents }, rankedAt: new Date(), publishedAt: order.listing.publishedAt ?? new Date() } });

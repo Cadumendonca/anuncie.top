@@ -6,11 +6,11 @@ import { SiteFooter } from "@/components/site-footer";
 const epilogue = Epilogue({ subsets: ["latin"], display: "swap", variable: "--font-epilogue" });
 
 export const metadata: Metadata = {
-  title: { default: "Anuncie.top", template: "%s | Anuncie.top" },
+  title: { default: "Anuncio.top", template: "%s | Anuncio.top" },
   description: "O ranking brasileiro em que a sua oferta decide a posição.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://anuncie.top"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://anuncio.top"),
   alternates: { canonical: "/" },
-  openGraph: { title: "Anuncie.top", description: "Dispute atenção. Ganhe cliques. Fique no topo.", url: "https://anuncie.top", siteName: "Anuncie.top", type: "website", locale: "pt_BR" }
+  openGraph: { title: "Anuncio.top", description: "Dispute atenção. Ganhe cliques. Fique no topo.", url: "https://anuncio.top", siteName: "Anuncio.top", type: "website", locale: "pt_BR" }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

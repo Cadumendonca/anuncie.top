@@ -1,4 +1,4 @@
-# Anuncie.top
+# Anuncio.top
 
 Ranking brasileiro de visibilidade paga. O valor confirmado pelo Mercado Pago define a posição pública do produto.
 
