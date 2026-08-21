@@ -40,6 +40,6 @@ export function normalizeTarget(input: string): NormalizedTarget {
 
 export function destinationWithUtm(url: string) {
   const target = new URL(url);
-  target.searchParams.set("utm_source", "seusiteemalta");
+  target.searchParams.set("utm_source", "anuncie.top");
   return target.toString();
 }

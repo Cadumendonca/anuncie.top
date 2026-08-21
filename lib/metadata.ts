@@ -29,7 +29,7 @@ export async function fetchSiteMetadata(target: NormalizedTarget): Promise<SiteM
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5_000);
   try {
-    const response = await fetch(target.url, { redirect: "follow", signal: controller.signal, headers: { "user-agent": "SeuSiteEmAltaBot/1.0 (+metadata-preview)", accept: "text/html" } });
+    const response = await fetch(target.url, { redirect: "follow", signal: controller.signal, headers: { "user-agent": "AnuncieTopBot/1.0 (+https://anuncie.top)", accept: "text/html" } });
     if (!response.ok) throw new Error("O site não respondeu à prévia.");
     const type = response.headers.get("content-type") ?? "";
     const length = Number(response.headers.get("content-length") ?? 0);
