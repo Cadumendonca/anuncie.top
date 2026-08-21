@@ -9,7 +9,7 @@ Ranking brasileiro de visibilidade paga. O valor confirmado pelo Mercado Pago de
 3. Execute `npm install` e `npm run db:push`.
 4. Execute `npm run dev`.
 
-Sem banco ou credenciais de pagamento, a aplicação abre em modo de demonstração: a interface e o fluxo até o retorno pendente funcionam com dados locais, mas nenhuma cobrança é criada.
+Sem banco, o ranking aparece vazio e nenhum dado é persistido. Sem credenciais de pagamento, nenhuma cobrança real é criada.
 
 ## Produção
 

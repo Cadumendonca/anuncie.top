@@ -36,7 +36,8 @@ export async function POST(request: Request) {
     await prisma.$transaction(async (tx) => {
       const payment = await tx.payment.update({ where: { bidOrderId: order.id }, data: { providerPaymentId: String(providerPayment.id), status: mapped, approvedAt: mapped === "APPROVED" ? new Date() : null } });
       if (mapped === "APPROVED" && order.status !== "APPROVED") {
-        const user = await tx.user.upsert({ where: { email: providerPayment.payer?.email ?? "" }, create: { email: providerPayment.payer?.email ?? "" }, update: {} });
+        const payerEmail = providerPayment.payer?.email?.trim().toLowerCase() || `pagamento-${providerPayment.id}@anuncie.top`;
+        const user = await tx.user.upsert({ where: { email: payerEmail }, create: { email: payerEmail }, update: {} });
         await tx.bidOrder.update({ where: { id: order.id }, data: { status: "APPROVED", userId: user.id } });
         await tx.listing.update({ where: { id: order.listingId }, data: { ownerId: order.listing.ownerId ?? user.id, status: "ACTIVE", netBidCents: { increment: order.chargeCents }, rankedAt: new Date(), publishedAt: order.listing.publishedAt ?? new Date() } });
         if (order.takeover && order.takeover.reservedUntil > new Date()) await tx.takeover.update({ where: { id: order.takeover.id }, data: { status: "ACTIVE", startsAt: new Date(), endsAt: new Date(Date.now() + Number(process.env.TAKEOVER_HOURS ?? 3) * 3_600_000) } });

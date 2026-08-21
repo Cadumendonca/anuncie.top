@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Epilogue } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
 const epilogue = Epilogue({ subsets: ["latin"], display: "swap", variable: "--font-epilogue" });
@@ -19,7 +18,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="pt-BR" className={epilogue.variable}>
       <body>
         <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
-        <SiteHeader />
         <main id="conteudo">{children}</main>
         <SiteFooter />
       </body>

@@ -5,7 +5,7 @@ export const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_R
   : null;
 
 export async function heartbeat(sessionId: string) {
-  if (!redis) return { online: 187, lastHour: 1249 };
+  if (!redis) return { online: 0, lastHour: 0 };
   const now = Date.now();
   await redis.zadd("presence", { score: now, member: sessionId });
   await redis.zremrangebyscore("presence", 0, now - 3_600_000);
